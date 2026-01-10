@@ -1,0 +1,62 @@
+model_list:
+  - model_name: llama3
+    litellm_params:
+      model: ollama/llama3
+      api_base: "http://host.docker.internal:11434"
+      custom_llm_provider: ollama
+  - model_name: coding-assistant
+    litellm_params:
+      model: ollama/deepseek-v3.2-speciale
+      api_base: "http://host.docker.internal:11434"
+      custom_llm_provider: ollama
+  # OpenAI Model Group
+  - model_name: gpt-4o
+    litellm_params:
+      model: openai/gpt-4o
+      api_key: os.environ/OPENAI_API_KEY
+  # Azure Failover for GPT-4
+  - model_name: gpt-4o
+    litellm_params:
+      model: azure/gpt-4o-deployment-name
+      api_base: os.environ/AZURE_API_BASE
+      api_key: os.environ/AZURE_API_KEY
+  # Anthropic Model
+  - model_name: claude-3
+    litellm_params:
+      model: anthropic/claude-3-5-sonnet-20240620
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+general_settings:
+  #master_key: sk-your-admin-key-here # Must start with sk-
+  #database_url: "os.environ/DATABASE_URL" # Required for usage/budget tracking
+  database_connection_pool_limit: 20 # Recommended for production (10-20)
+  use_redis_transaction_buffer: true # Prevents DB deadlocks during high traffic
+  allow_requests_on_db_unavailable: true # Graceful degradation if Postgres fails
+  #alerting: ["slack"] # Integrated monitoring for exceptions and budgets
+
+router_settings:
+  routing_strategy: simple-shuffle # Best performance for 2026 production
+  redis_host: os.environ/REDIS_HOST
+  redis_port: os.environ/REDIS_PORT
+  redis_password: os.environ/REDIS_PASSWORD
+  num_retries: 3 # Global retry logic
+  fallbacks: [{"gpt-4o": ["claude-3"]}] # Automatic fallback if primary fails
+
+litellm_settings:
+  cache: true # Enable Redis caching
+  cache_params:
+    type: redis
+    host: os.environ/REDIS_HOST
+    port: os.environ/REDIS_PORT
+    password: os.environ/REDIS_PASSWORD
+  json_logs: true # Structured logging for ELK/Datadog
+  request_timeout: 600 # Global timeout in seconds
+  drop_params: true # Ignore non-OpenAI parameters without erroring
+  set_verbose: false # Ensure debug logs are disabled in production
+  prometheus_metrics: true # Enable Prometheus metrics endpoint
+  callbacks:
+    - prometheus
+    - langfuse
+    - langtrace
+  langfuse_settings:
+  success_callback: ["langfuse"]
