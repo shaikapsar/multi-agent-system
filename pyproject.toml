@@ -8,7 +8,7 @@ dependencies = []
 
 [tool.uv.workspace]
 members = [
+    "services/orchestrator",
     "services/researcher_agent",
     "services/writer_agent",
-    "orchestrator",
 ]

@@ -1,0 +1,20 @@
+# .devcontainer/app-docker-compose.yml
+services:
+  orchestrator:
+    build: 
+      # Context must point to the folder containing the Dockerfile
+      context: ../services/orchestrator
+      dockerfile: Dockerfile
+    container_name: orchestrator
+    tty: true
+    stdin_open: true
+    develop:
+      watch:
+        - action: sync+restart
+          # Path is relative to this compose file's location
+          path: ../services/orchestrator/src
+          target: /app/src
+        - action: rebuild
+          path: ../services/orchestrator/pyproject.toml
+        - action: rebuild
+          path: ../services/orchestrator/uv.lock
