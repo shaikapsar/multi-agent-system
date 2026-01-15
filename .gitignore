@@ -9,4 +9,6 @@ wheels/
 # Virtual environments
 .venv
 
+# Ignore macOS metadata files
 .DS_Store
+**/.DS_Store
